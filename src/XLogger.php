@@ -254,7 +254,10 @@ class XLogger
             case 'O':
                 $md5 = 'O' . md5($file);
                 if (empty($this->fp[$md5])) {
-                    !is_file($file) and touch($file);
+                    if (!is_file($file)) {
+                        !mkdir(dirname($file), '0777', true) && !is_dir(dirname($file));
+                        touch($file);
+                    }
                     if (!is_file($file)) {
                         tmp_log(
                             '[FILE.LOGGER] 创建日志文件失败，或者不可写 file:' . $file,
