@@ -1,8 +1,6 @@
 <?php
 
-use Varobj\XP\BaseException;
 use Varobj\XP\Exception\SystemConfigException;
-use Varobj\XP\Exception\UsageErrorException;
 use Varobj\XP\XLogger;
 
 /**
@@ -33,7 +31,6 @@ if (!function_exists('load_file_env')) {
     /**
      * 读取关键配置文件到环境变量
      * @param string $envFile
-     * @throws BaseException
      */
     function load_file_env(string $envFile = ''): void
     {
@@ -53,11 +50,11 @@ if (!function_exists('load_file_env')) {
     function conf_from_file(string $envFile = ''): array
     {
         if (!defined('APP_PATH')) {
-            throw new UsageErrorException('must define APP_PATH');
+            throw new SystemConfigException("must define 'APP_PATH'");
         }
         !$envFile and $envFile = APP_PATH . DIRECTORY_SEPARATOR . '.env';
         if (!is_file($envFile)) {
-            throw (new SystemConfigException())->debug('cannot found .env file');
+            throw new SystemConfigException('cannot found .env file');
         }
 
         $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
