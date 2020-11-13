@@ -255,7 +255,7 @@ class XLogger
                 $md5 = 'O' . md5($file);
                 if (empty($this->fp[$md5])) {
                     if (!is_file($file)) {
-                        !mkdir(dirname($file), '0777', true) && !is_dir(dirname($file));
+                        !@mkdir(dirname($file), '0777', true) && !is_dir(dirname($file));
                         touch($file);
                     }
                     if (!is_file($file)) {
