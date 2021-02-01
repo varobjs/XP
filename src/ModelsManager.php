@@ -2,10 +2,10 @@
 
 namespace Varobj\XP;
 
-use Varobj\XP\Exception\UsageErrorException;
 use Phalcon\Db\Adapter\AdapterInterface;
 use Phalcon\Mvc\Model\Manager;
 use Phalcon\Mvc\ModelInterface;
+use Varobj\XP\Exception\UsageErrorException;
 
 class ModelsManager extends Manager
 {

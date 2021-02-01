@@ -10,7 +10,7 @@ use function is_object;
 class XLogger
 {
     /**
-     * 日志文件夹路径 一般为 /var/log/APP_NAME
+     * 日志文件夹路径
      * @var string $path
      */
     protected $log_path;

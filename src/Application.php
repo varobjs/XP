@@ -47,14 +47,13 @@ class Application extends Micro
             $this->_controllerMethod = strtoupper($method) . 'Action';
         } else {
             $this->_controllerMethod = strtolower($this->request->getMethod()) . 'Action';
-            $appName = defined('APP_NAME') ? APP_NAME : '';
             $controller_arr = [
-                ($appName ? ($appName . '\\Controller\\') : '') . $controller,
+                'Api\\Controller\\' . $controller,
                 'Varobj\XP\\Controller\\' . $controller
             ];
         }
 
-        $nofound = true;
+        $notfound = true;
         foreach ($controller_arr as $item) {
             if (!class_exists($item)) {
                 continue;
@@ -94,18 +93,18 @@ class Application extends Micro
                 default:
                     throw new UsageErrorException('暂时不支持的方法[' . $this->request->getMethod());
             }
-            $nofound = false;
+            $notfound = false;
             $this->_controllerClass = $item;
             $this->handle('/' . ltrim($url['path'], '/'));
             break;
         }
 
-        if ($nofound && $this->_controllerMethod === 'options') {
+        if ($notfound && $this->_controllerMethod === 'options') {
             $this->handle('/' . ltrim($url['path'], '/'));
-        } elseif ($nofound) {
+        } elseif ($notfound) {
             $_action = $this->_controllerMethod;
             $controller_arr = array_map(
-                function ($v) use ($_action) {
+                static function ($v) use ($_action) {
                     return $v . '@' . $_action;
                 },
                 $controller_arr
@@ -129,6 +128,11 @@ class Application extends Micro
         return $this->_controllerMethod;
     }
 
+    /**
+     * @param string $url
+     * @param string $controllerClass
+     * @param string $method
+     */
     public function addAlias(string $url, string $controllerClass, $method = 'get'): void
     {
         $this->_alias[$url] = [

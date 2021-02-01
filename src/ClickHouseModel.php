@@ -48,7 +48,7 @@ abstract class ClickHouseModel
         if (!$host || !$port) {
             throw new UsageErrorException('clickhouse配置有误');
         }
-        if (is_prod() && (!$username || !$password)) {
+        if ((!$username || !$password) && is_prod()) {
             throw new UsageErrorException('clickhouse线上必须要配置用户名和密码');
         }
 

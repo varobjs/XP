@@ -2,7 +2,8 @@
 
 namespace Varobj\XP\Service;
 
-use Phalcon\Di\FactoryDefault;
+use ErrorException;
+use Exception;
 use Varobj\XP\Application;
 
 class UserService
@@ -19,6 +20,10 @@ class UserService
      */
     public static $access_token;
 
+    /**
+     * @param string $user_name
+     * @throws ErrorException
+     */
     public static function setUserName(string $user_name): void
     {
         if (static::$user_name) {
@@ -26,11 +31,11 @@ class UserService
         }
 
         static::$user_name = $user_name;
-        /** @var Application $applicaiton */
-        $applicaiton = FactoryDefault::getDefault()->getShared('application');
-        $applicaiton->logger->setDefaultPrefix(
+        /** @var Application $application */
+        $application = get_service('application');
+        $application->logger->setDefaultPrefix(
             sprintf(
-                $applicaiton->logger->getDefaultPrefix(),
+                $application->logger->getDefaultPrefix(),
                 static::$user_name
             )
         );
@@ -51,6 +56,10 @@ class UserService
      */
     protected static $request_id;
 
+    /**
+     * @param string $request_id
+     * @throws Exception
+     */
     public static function setRequestID(string $request_id = ''): void
     {
         if (static::$request_id) {
@@ -66,6 +75,10 @@ class UserService
         static::$request_id = strtoupper(substr(md5($_string), 4, 18)) . random_int(11, 99);
     }
 
+    /**
+     * @return string
+     * @throws Exception
+     */
     public static function getRequestID(): string
     {
         if (!static::$request_id) {

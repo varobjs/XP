@@ -44,9 +44,7 @@ trait CommonJobTrait
 
 Usage: 
 
-    php index.php xxx [options]
-or
-    ./job xxx [options]
+    \33[1;38;2;255;0;255m php job.php xxx [options]\33[0m
 
 -----------------------------------------
 [options] like "-k1=v1 -k2=v2"
@@ -59,6 +57,9 @@ Common options:
     -mt|--mt[=n]    multi threads, --mt=nums  (nums > 1) special thread numbers
     -h|--h          help
 
+> eg: php job.php TestJob -k1=v1 -k2=v2
+
+:)👌
 -----------------------------------------
 EOL;
 
@@ -88,11 +89,10 @@ EOL;
         $this->log = XLog();
         $this->req_id = XString::default($jobParams, 'req_id', UserService::getRequestID());
         if (isset($jobParams['h'])) {
-            $help = $this->help_text ?? 'Usage <php index.php JobName [options][params]>';
+            $help = $this->helpText() ?: '脚本说明';
             $help .= PHP_EOL . $this->common_options . PHP_EOL;
             die($help);
         }
-
         // 默认的 lockName 为脚本 class 名称
         null === $this->lockName and $this->lockName = str_replace('\\', '_', static::class);
 
@@ -103,12 +103,12 @@ EOL;
         $support_multi_process = isset($jobParams['mp']);
         if ($support_multi_process) {
             if ($this->getProcesses() > $this->max_allow_process) {
-                $this->echoAndLog('进程数不能超过 ' . $this->max_allow_process, 'eror');
+                $this->echoAndLog('进程数不能超过 ' . $this->max_allow_process, 'error');
                 exit;
             }
             if ($jobParams['mp'] !== '') {
                 $this->mp = (int)$jobParams['mp'];
-                if ($this->mp > $this->getProcesses() || $this->mp < 1) {
+                if ($this->mp < 1 || $this->mp > $this->getProcesses()) {
                     $this->echoAndLog('--mp 指定进程数必须在 1 ~ ' . $this->getProcesses() . ' 之间');
                     exit;
                 }
@@ -155,7 +155,6 @@ EOL;
 
     public function __destruct()
     {
-        $this->echoAndLog('---------- 脚本结束 ----------');
         $this->_unlock();
         if ($this->error === 0) {
             $this->echoAndLog('成功', 'success', 1, '执行结果: ');
@@ -188,27 +187,40 @@ EOL;
         }
     }
 
+    /**
+     * @param string $lockName
+     * @throws \Phalcon\Storage\Exception
+     */
     public function lock(string $lockName): void
     {
         if (!$lockName) {
             return;
         }
-        $xredis = XRedis::getInstance(null, true);
-        $this->lockValue = $xredis->lock($lockName, $this->lockTime);
+        $redis = XRedis::getInstance(null, true);
+        $this->lockValue = $redis->lock($lockName, $this->lockTime);
         if (false === $this->lockValue) {
-            $this->echoAndLog('加锁失败:' . $lockName, 'error');
+            $this->echoAndLog(
+                sprintf(
+                    '无法添加进程锁[%s]%s',
+                    $lockName,
+                    $redis->redis->has($redis->getOriginKey($lockName))
+                        ? 'res: 锁已经存在，ttl=' . $redis->predis->ttl($redis->getOriginKey($lockName))
+                        : 'res: 原因未知'
+                ),
+                'error'
+            );
             exit;
         }
-        $this->echoAndLog('加锁成功', 'success');
     }
 
     public function unlock(string $lockName): void
     {
-        $xredis = XRedis::getInstance(null, true);
-        $re = $xredis->unLock($lockName, $this->lockValue);
+        $redis = XRedis::getInstance(null, true);
+        $re = $redis->unLock($lockName, $this->lockValue);
         $this->lockValue = '';
-        $this->echoAndLog('开锁' . ($re ? '成功' : '失败'), $re ? 'success' : 'error');
-        !$re and $this->echoAndLog('lock miss, lockname: ' . $lockName);
+        if (!$re) {
+            $this->echoAndLog('开锁失败, lock_name=' . $lockName, 'error');
+        }
     }
 
     /**
@@ -228,11 +240,10 @@ EOL;
      */
     public function getLogFile(string $re_conf_file = ''): string
     {
-        $re_conf_file and $this->log_file = $re_conf_file;
+        !empty($re_conf_file) and $this->log_file = $re_conf_file;
         if (!$this->log_file) {
             $tmp = strtolower(str_replace(['\\', '\-'], ['_', '_'], static::class));
-//            $tmp = substr($tmp, strlen(APP_NAME) + 5);
-            $this->log_file = rtrim($this->log->getLogPath(), '/') . '/job/' .
+            $this->log_file = rtrim($this->log->getLogPath(), '/') . '/' .
                 $tmp . '_' . date('Ymd') . '.log';
         }
         return $this->log_file;
@@ -329,7 +340,6 @@ EOL;
         while (!empty($this->signal)) {
             $pid = pcntl_wait($status);
             if ($pid > 0) {
-                $this->echoAndLog('child ' . $pid . ' exit!');
                 unset($this->signal[$pid]);
             }
             usleep(80000);
@@ -402,5 +412,10 @@ EOL;
         }
 
         return $date;
+    }
+
+    public function helpText(): string
+    {
+        return '';
     }
 }

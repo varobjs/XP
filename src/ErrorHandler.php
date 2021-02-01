@@ -143,15 +143,17 @@ class ErrorHandler extends Injectable
         }
 
         if (PHP_SAPI !== 'cli') {
-            if (empty($error['no_interrupt']) && $this->response && $this->response->getContent()) {
-                !$this->response->isSent() and $this->response->setStatusCode(200)->send();
-            } elseif (empty($error['no_interrupt'])) {
-                $this->response->setJsonContent(
-                    (new ApiResult(
-                        self::$has_error ? 'error' : 'warning',
-                        (int)($error['errno'] ?? -1)
-                    ))->setMessage($error['errmsg'] ?? '')->toArray()
-                )->setStatusCode(200)->send();
+            if (empty($error['no_interrupt'])) {
+                if ($this->response && $this->response->getContent()) {
+                    !$this->response->isSent() and $this->response->setStatusCode(200)->send();
+                } else {
+                    $this->response->setJsonContent(
+                        (new ApiResult(
+                            self::$has_error ? 'error' : 'warning',
+                            (int)($error['errno'] ?? -1)
+                        ))->setMessage($error['errmsg'] ?? '')->toArray()
+                    )->setStatusCode(200)->send();
+                }
             }
         } else {
             $_error = $error;

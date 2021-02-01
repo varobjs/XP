@@ -2,11 +2,13 @@
 
 namespace Varobj\XP;
 
+use Phalcon\Storage\Adapter\Redis as PhalconRedis;
+use Phalcon\Storage\Exception;
+use Phalcon\Storage\SerializerFactory;
+use Redis;
+use Throwable;
 use Varobj\XP\Exception\SystemConfigException;
 use Varobj\XP\Exception\UsageErrorException;
-use Phalcon\Storage\Adapter\Redis as PhalconRedis;
-use Phalcon\Storage\SerializerFactory;
-use Throwable;
 
 /**
  * XRedis 工具类,单例模式 && 默认读取配置
@@ -17,14 +19,14 @@ use Throwable;
  * // 自定义配置
  * $redisWithConfig = XRedis::getInstance( $configParams );
  * // 默认配置 .env file ( REDIS_* )
- * $xredis = XRedis::getInstance();
- * $reids = XRedis::getInstance()->redis
+ * $xRedis = XRedis::getInstance();
+ * $redis = XRedis::getInstance()->redis
  * $predis = XRedis::getInstance()->predis;
  *
  * // 三者区别
- * // 1. $xredis 高层,封装 lock unlock send recv 等复杂业务
+ * // 1. $xRedis 高层,封装 lock unlock send recv 等复杂业务
  * // 1. $redis 中层,框架的实现
- * // 3. $predis 低层,基于 phpredis 支持多种命令
+ * // 3. $predis 低层,基于 php-redis 支持多种命令
  *
  * // `set prefix:abc test 86400`其中`prefix:`为配置的`prefix`,`86400`依赖于配置的`lifetime`
  * $redis->set('abc', 'test');
@@ -41,10 +43,15 @@ class XRedis
 
     public $redis;
     /**
-     * @var \Redis
+     * @var Redis
      */
     public $predis;
 
+    /**
+     * XRedis constructor.
+     * @param array $params
+     * @throws Exception
+     */
     public function __construct(array $params = [])
     {
         $options = [
@@ -136,11 +143,12 @@ class XRedis
      * 发送消息
      * ```php
      * $redis = XRedis::getInstance();
-     * $redis->queueName('myqueue');
+     * $redis->queueName('my-queue');
      * $redis->send('hi world');
      * ```
      * @param string $value
      * @return bool|int
+     * @throws Exception
      */
     public function send(string $value)
     {
@@ -165,7 +173,7 @@ class XRedis
      * class MyClass {
      *   function main() {
      *      $redis = XRedis::getInstance();
-     *      $redis->queueName('myqueue');
+     *      $redis->queueName('my-queue');
      *      $redis->callback([new self(), 'consume']);
      *   }
      *
@@ -175,6 +183,7 @@ class XRedis
      * }
      * ```
      * @param bool $verbose
+     * @throws Exception
      */
     public function recv(bool $verbose = false): void
     {
@@ -212,5 +221,10 @@ class XRedis
             sleep(5);
             $this->recv($verbose);
         }
+    }
+
+    public function getOriginKey(string $key): string
+    {
+        return $this->redis->getPrefix() . $key;
     }
 }

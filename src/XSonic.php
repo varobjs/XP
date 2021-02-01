@@ -16,8 +16,8 @@ use Varobj\XP\Exception\UsageErrorException;
  *
  * 支持方法：
  *
- * $sonic->search($collection, $buket, $terms);
- * $sonic->search($collection, $buket, $terms, $limit, $offset);
+ * $sonic->search($collection, $bucket, $terms);
+ * $sonic->search($collection, $bucket, $terms, $limit, $offset);
  *
  * ingest 模式
  *
@@ -25,8 +25,8 @@ use Varobj\XP\Exception\UsageErrorException;
  *
  * 支持方法：
  *
- * $sonic->push($collection, $buket, $object, $text);
- * $sonic->push($collection, $buket, $object, $text, $lang);
+ * $sonic->push($collection, $bucket, $object, $text);
+ * $sonic->push($collection, $bucket, $object, $text, $lang);
  *
  * @package Varobj\XP
  */

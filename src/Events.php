@@ -2,6 +2,7 @@
 
 namespace Varobj\XP;
 
+use Exception;
 use Phalcon\Annotations\Annotation;
 use Phalcon\Db\Adapter\Pdo\Mysql;
 use Phalcon\Di\DiInterface;
@@ -109,7 +110,7 @@ class Events
     ): bool {
         $middles = array_filter(
             $annotations,
-            function ($v) use ($type) {
+            static function ($v) use ($type) {
                 /** @var Annotation $v */
                 return strpos($v->getName(), $type . '_') === 0;
             }
@@ -153,6 +154,11 @@ class Events
         $db_query_times[$_last_host_id . md5($sql)] = microtime(true);
     }
 
+    /**
+     * @param Event $event
+     * @param Mysql $mysql
+     * @throws Exception
+     */
     public function afterQuery(Event $event, Mysql $mysql): void
     {
         /** @var XLogger $logger */
@@ -171,7 +177,7 @@ class Events
             unset($db_query_times[$_last_host_id . md5($sql)]);
         }
 
-        if ($exe_times > 0 && ($exe_times > 0.4 || $this->isSQLLoger($sql))) {
+        if ($exe_times > 0 && ($exe_times > 0.4 || $this->willWriteSqlLog($sql))) {
             // 保存 db scheme 的 md5 和 rawSql
             $md5 = md5($sql);
             $vars = $mysql->getSqlVariables() ?: [];
@@ -227,11 +233,12 @@ class Events
     /**
      * 线上模式使用，判断当前条件是否记录日志
      * 基于 Redis
-     * 没个 sql mode 每天最少记录一次，其他情况
+     * 每个 sql mode 每天最少记录一次，其他情况
      * @param string $sql
      * @return bool
+     * @throws Exception
      */
-    protected function isSQLLoger(string $sql): bool
+    protected function willWriteSqlLog(string $sql): bool
     {
         if (!is_prod()) {
             return true;

@@ -1,13 +1,14 @@
 <?php
 
+use Phalcon\Di\FactoryDefault;
 use Varobj\XP\Exception\SystemConfigException;
 use Varobj\XP\XLogger;
 
 /**
- * 是否是 开发、测试等环境
+ * 是否是开发环境
  * @return bool
  */
-function is_dev()
+function is_dev(): bool
 {
     return in_array(
         strtolower(defined('APPLICATION_ENV') ? APPLICATION_ENV : ''),
@@ -16,10 +17,10 @@ function is_dev()
 }
 
 /**
- * 是否是 beta、线上等环境
+ * 是否是线上环境
  * @return bool
  */
-function is_prod()
+function is_prod(): bool
 {
     return in_array(
         strtolower(defined('APPLICATION_ENV') ? APPLICATION_ENV : ''),
@@ -197,5 +198,22 @@ if (!function_exists('_verbose')) {
             echo '[verbose] ' . $msg . PHP_EOL;
         }
         return true;
+    }
+}
+
+if (!function_exists('get_service')) {
+    /**
+     * @param string $service_name
+     * @param bool $shared
+     * @return mixed
+     * @throws ErrorException
+     */
+    function get_service(string $service_name, bool $shared = true)
+    {
+        $di = FactoryDefault::getDefault();
+        if (!$di->has($service_name)) {
+            throw new ErrorException("服务不存在[{$service_name}]");
+        }
+        return $shared ? $di->getShared($service_name) : $di->get($service_name);
     }
 }

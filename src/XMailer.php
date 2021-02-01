@@ -7,10 +7,12 @@
 
 namespace Varobj\XP;
 
-use Varobj\XP\Exception\UsageErrorException;
+use Phalcon\Config;
 use Phalcon\Di;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
+use Varobj\XP\Exception\ErrorException;
+use Varobj\XP\Exception\UsageErrorException;
 
 class XMailer
 {
@@ -18,9 +20,15 @@ class XMailer
 
     protected $mailer;
 
+    /**
+     * XMailer constructor.
+     * @param string $fromName
+     * @throws \ErrorException
+     */
     public function __construct(string $fromName = '')
     {
-        $config = Di::getDefault()->getShared('config');
+        /** @var Config $config */
+        $config = get_service('config');
         $flag = 0;
         empty($config->mailer) and $flag = 1;
         !$flag and empty($config->mailer->email) and $flag = 2;
@@ -28,7 +36,7 @@ class XMailer
         $pwd = !$flag ? $config->mailer->password : '';
         !$flag and $pwd === '{ENV}' and !($pwd = env('mailer.password')) and $flag = 4;
         $email = !$flag ? $config->mailer->email : '';
-        !$flag and $email === '{ENV}' and !($email = env('mailer.eamil')) and $flag = 5;
+        !$flag and $email === '{ENV}' and !($email = env('mailer.email')) and $flag = 5;
         if ($flag) {
             throw new UsageErrorException('发送邮件服务配置错误[' . $flag . ']');
         }

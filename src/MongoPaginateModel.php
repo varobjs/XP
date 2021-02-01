@@ -6,7 +6,7 @@ use MongoDB\Collection;
 
 /**
  * usage:
- * $model = new MonogoPaginateModel([
+ * $model = new MongoPaginateModel([
  *      'model' => DelayJobLog::class,
  *      'filter' => [],
  *      'limit' => 10,
@@ -43,7 +43,7 @@ class MongoPaginateModel
         $this->filter = $params['filter'];
         $this->page_size = $params['page_size'];
         $this->page = $params['page'];
-        if (!empty($params['options']) and is_array($params['options'])) {
+        if (!empty($params['options']) && is_array($params['options'])) {
             $this->options = $params['options'];
         }
         $this->options['limit'] = $this->page_size;

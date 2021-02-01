@@ -79,7 +79,7 @@ abstract class MongoModel
         if (null === static::$client) {
             static::connection($params);
         }
-        if (!static::database() && !static::$_database) {
+        if (!static::$_database && !static::database()) {
             throw new UsageErrorException('必须设置database');
         }
         if (!static::collection()) {

@@ -11,7 +11,6 @@ use function is_array;
 use function is_callable;
 use function is_string;
 use function mb_strlen;
-use function strlen;
 
 /**
  * 参数校验类

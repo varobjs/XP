@@ -27,9 +27,9 @@ class DocsController extends BaseController
     {
         $view = new Simple();
         return $view->render(
-            APP_PATH . '/app/Docs/views/docs',
+            __DIR__ . '/../Docs/views/docs',
             [
-                'url' => 'index/docs/api',
+                'url' => 'docs/api',
             ]
         );
     }
