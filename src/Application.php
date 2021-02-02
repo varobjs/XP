@@ -21,6 +21,12 @@ class Application extends Micro
 
     private $_alias = [];
 
+    public function __construct(\Phalcon\Di\DiInterface $container = null)
+    {
+        parent::__construct($container);
+        !is_prod() and ErrorHandler::$turn_undefined_index_to_exception = true;
+    }
+
     public function start(): void
     {
         $url = parse_url($_SERVER['REQUEST_URI'] ?? '/');
