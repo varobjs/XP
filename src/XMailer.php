@@ -8,10 +8,8 @@
 namespace Varobj\XP;
 
 use Phalcon\Config;
-use Phalcon\Di;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
-use Varobj\XP\Exception\ErrorException;
 use Varobj\XP\Exception\UsageErrorException;
 
 class XMailer
