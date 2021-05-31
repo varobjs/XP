@@ -69,10 +69,13 @@ EOL;
      */
     final public function initialize(): void
     {
+        if (is_dev() && \PHP_SAPI === 'cli') {
+            echo 'Your can trace log by : ' . UserService::getRequestID() . PHP_EOL;
+        }
         if (!extension_loaded('pcntl')) {
             throw new ErrorException(__METHOD__ . ' need ‘pcntl’ extension');
         }
-        pcntl_signal(SIGINT, [$this, 'signal_quit_handler'], false);
+        pcntl_signal(SIGINT, [$this, 'signal_quit_handler']);
         global $jobParams;
         $this->verbose_plus = isset($jobParams['vv']);
         if ($this->verbose_plus) {

@@ -5,27 +5,43 @@ use Varobj\XP\Exception\SystemConfigException;
 use Varobj\XP\XLogger;
 
 /**
+ * 配置读取
+ */
+if (!function_exists('config')) {
+    function config($path, $default = null)
+    {
+        /** @var \Phalcon\Config $config */
+        $config = get_service('config');
+        return $config->path($path, $default);
+    }
+}
+
+/**
  * 是否是开发环境
  * @return bool
  */
-function is_dev(): bool
-{
-    return in_array(
-        strtolower(defined('APPLICATION_ENV') ? APPLICATION_ENV : ''),
-        ['dev', 'test']
-    );
+if (!function_exists('is_dev')) {
+    function is_dev(): bool
+    {
+        return in_array(
+            config('app_env'),
+            ['dev', 'test']
+        );
+    }
 }
 
 /**
  * 是否是线上环境
  * @return bool
  */
-function is_prod(): bool
-{
-    return in_array(
-        strtolower(defined('APPLICATION_ENV') ? APPLICATION_ENV : ''),
-        ['prod', 'beta', 'stage']
-    );
+if (!function_exists('is_prod')) {
+    function is_prod(): bool
+    {
+        return in_array(
+            config('app_env'),
+            ['prod', 'beta', 'stage']
+        );
+    }
 }
 
 if (!function_exists('load_file_env')) {
@@ -50,10 +66,7 @@ if (!function_exists('load_file_env')) {
      */
     function conf_from_file(string $envFile = ''): array
     {
-        if (!defined('APP_PATH')) {
-            throw new SystemConfigException("must define 'APP_PATH'");
-        }
-        !$envFile and $envFile = APP_PATH . DIRECTORY_SEPARATOR . '.env';
+        !$envFile and $envFile = BASE_PATH . DIRECTORY_SEPARATOR . '.env';
         if (!is_file($envFile)) {
             throw new SystemConfigException('cannot found .env file');
         }
@@ -88,6 +101,12 @@ if (!function_exists('env')) {
     {
         $value = getenv($key);
         if ($value === false) {
+            if (is_null($default)) {
+                throw new SystemConfigException(sprintf(
+                    "cannot found config[%s]",
+                    $key
+                ));
+            }
             return ($default instanceof Closure) ? $default() : $default;
         }
         switch (strtolower($value)) {

@@ -3,9 +3,11 @@
 namespace Varobj\XP;
 
 use Phalcon\Config;
+use Phalcon\Di\DiInterface;
 use Phalcon\Mvc\Micro;
 use Varobj\XP\Exception\NotFoundException;
 use Varobj\XP\Exception\UsageErrorException;
+use function Clue\StreamFilter\fun;
 
 /**
  * Class Application
@@ -18,18 +20,27 @@ class Application extends Micro
     private $_defaultController = 'IndexController';
     private $_controllerClass = '';
     private $_controllerMethod = '';
+    protected $_namespaces = [
+        'Varobj\XP\\Controllers\\'
+    ];
 
     private $_alias = [];
 
-    public function __construct(\Phalcon\Di\DiInterface $container = null)
+    public function __construct(DiInterface $container = null)
     {
         parent::__construct($container);
         !is_prod() and ErrorHandler::$turn_undefined_index_to_exception = true;
     }
 
+    public function addNamespace($namespace): void
+    {
+        array_unshift($this->_namespaces, $namespace);
+    }
+
     public function start(): void
     {
         $url = parse_url($_SERVER['REQUEST_URI'] ?? '/');
+        $url['path'] === '' && $url['path'] = '/';
         $parts = explode('/', $url['path'] ?: '/');
 
         // 去掉前后空字符串
@@ -47,20 +58,21 @@ class Application extends Micro
             $controller = implode('', array_map('ucfirst', explode('-', $controller)));
         }
 
+        $isAlias = false;
         if (isset($this->_alias[$url['path']])) {
-            $controller_arr = [$this->_alias[$url['path']]['controller']];
+            $isAlias = true;
+            $this->_namespaces = [$this->_alias[$url['path']]['controller']];
             $method = $this->_alias[$url['path']]['method'];
             $this->_controllerMethod = strtoupper($method) . 'Action';
         } else {
             $this->_controllerMethod = strtolower($this->request->getMethod()) . 'Action';
-            $controller_arr = [
-                'Api\\Controller\\' . $controller,
-                'Varobj\XP\\Controller\\' . $controller
-            ];
+            $this->_namespaces = array_map(static function ($value) use ($controller) {
+                return rtrim($value, '\\\\') . '\\' . $controller;
+            }, $this->_namespaces);
         }
 
         $notfound = true;
-        foreach ($controller_arr as $item) {
+        foreach ($this->_namespaces as $item) {
             if (!class_exists($item)) {
                 continue;
             }
@@ -70,7 +82,6 @@ class Application extends Micro
             }
             $class->setDI($this->getDI());
             is_callable([$class, 'initialize']) and $class->initialize();
-
 
             $l = strlen($url['path']);
 
@@ -113,7 +124,7 @@ class Application extends Micro
                 static function ($v) use ($_action) {
                     return $v . '@' . $_action;
                 },
-                $controller_arr
+                $this->_namespaces
             );
             throw (new NotFoundException('uri not found'))
                 ->debug(
@@ -139,7 +150,7 @@ class Application extends Micro
      * @param string $controllerClass
      * @param string $method
      */
-    public function addAlias(string $url, string $controllerClass, $method = 'get'): void
+    public function addAlias(string $url, string $controllerClass, string $method = 'get'): void
     {
         $this->_alias[$url] = [
             'controller' => $controllerClass,

@@ -1,6 +1,6 @@
 <?php
 
-namespace Varobj\XP\Controller;
+namespace Varobj\XP\Controllers;
 
 use Phalcon\Config;
 use Phalcon\Mvc\View\Simple;

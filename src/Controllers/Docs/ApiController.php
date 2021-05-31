@@ -1,6 +1,6 @@
 <?php
 
-namespace Varobj\XP\Controller\Docs;
+namespace Varobj\XP\Controllers\Docs;
 
 use Phalcon\Config;
 use Varobj\XP\BaseController;
@@ -25,7 +25,7 @@ class ApiController extends BaseController
      */
     public function getAction(): string
     {
-        $swagger = scan(APP_PATH . '/app/');
+        $swagger = scan(APP_PATH);
 
         return $swagger->toJson();
     }

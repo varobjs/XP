@@ -24,8 +24,7 @@ class XLogger
 
     public function __construct(string $log_path = '')
     {
-        $this->log_path = $log_path ?: '/var/log/' . (defined('APP_NAME') ?
-                APP_NAME : 'BaseApp');
+        $this->log_path = $log_path ?: STORAGE_PATH . '/logs';
         // 第一次创建文件夹
         if (!is_dir($this->log_path) && !mkdir($this->log_path) && !is_dir($this->log_path)) {
             throw (new SystemConfigException(
@@ -157,7 +156,8 @@ class XLogger
         string $file,
         string $userPrefix = '',
         int $location = 0
-    ): void {
+    ): void
+    {
         $_message = $this->_getMessageStr($message);
         if (strpos($_message, '[') !== 0) {
             $_message = $this->getDefaultPrefix() . $userPrefix . '[TY:' . $type . '] ' . $_message;
@@ -198,7 +198,8 @@ class XLogger
         string $type,
         $file = '',
         int $location = 1
-    ): void {
+    ): void
+    {
         $location = 1 - $location;
         if ($location > 0) {
             $traces = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);

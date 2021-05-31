@@ -1,38 +1,40 @@
 {
-	"name": "varobj/xp",
-	"description": "x-phalcon framework",
-	"type": "library",
-	"keywords": [
-		"php",
-		"phalcon",
-		"framework"
-	],
-	"license": "MIT",
-	"homepage": "https://github.com/varobjs/XP",
-	"support": {
-		"issues": "https://github.com/varobjs/XP/issues"
-	},
-	"authors": [
-		{
-			"name": "varobj",
-			"email": "varobj@varobj.com",
-			"role": "Developer"
-		}
-	],
-	"require": {
-		"php": ">=7.2",
-		"ext-mbstring": "*",
-		"ext-json": "*"
-	},
-	"require-dev": {
-		"phpunit/phpunit": "^7.0.0"
-	},
-	"autoload": {
-		"psr-4": {
-			"Varobj\\XP\\": "src"
-		},
-		"files": [
-			"./src/function.php"
-		]
-	}
+  "name": "varobj/xp",
+  "description": "x-phalcon framework",
+  "type": "library",
+  "keywords": [
+    "php",
+    "phalcon",
+    "framework"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/varobjs/XP",
+  "support": {
+    "issues": "https://github.com/varobjs/XP/issues"
+  },
+  "authors": [
+    {
+      "name": "varobj",
+      "email": "varobj@varobj.com",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": ">=7.2",
+    "ext-mbstring": "*",
+    "ext-json": "*",
+    "ext-redis": "*",
+    "ext-pcntl": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^7.0.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Varobj\\XP\\": "src"
+    },
+    "files": [
+      "./src/function.php"
+    ]
+  }
 }

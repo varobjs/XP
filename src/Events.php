@@ -107,7 +107,8 @@ class Events
         string $type = 'before',
         string $execute_type = 'before',
         $external_data = null
-    ): bool {
+    ): void
+    {
         $middles = array_filter(
             $annotations,
             static function ($v) use ($type) {
@@ -129,7 +130,7 @@ class Events
                     // 返回 false, 则中断
                     $ret = $classInstance->call($application);
                     if ($ret === false) {
-                        return false;
+                        return;
                     }
                 } else {
                     $application->logger->notice(
@@ -139,17 +140,12 @@ class Events
                 }
             }
         }
-        return true;
     }
 
     public function beforeQuery(Event $event, Mysql $mysql): void
     {
-        $host = $mysql->getDescriptor()['host'];
-        $_last_host_id = strrev(strstr(strrev($host), '.', true));
-        $sql = $mysql->getRealSQLStatement();
+        [$_last_host_id, $sql] = $this->getHostAndSql($mysql);
 
-        $sql = str_replace(["\r\n", "\r", "\n"], [' ', ' ', ' '], $sql);
-        $sql = preg_replace('/\s\s*/', ' ', $sql);
         global $db_query_times;
         $db_query_times[$_last_host_id . md5($sql)] = microtime(true);
     }
@@ -161,15 +157,7 @@ class Events
      */
     public function afterQuery(Event $event, Mysql $mysql): void
     {
-        /** @var XLogger $logger */
-        $logger = $this->di->getShared('logger');
-
-        $sql = $mysql->getSQLStatement();
-        $sql = str_replace(["\r\n", "\r", "\n"], [' ', ' ', ' '], $sql);
-        $sql = preg_replace('/\s\s*/', ' ', $sql);
-        $host = $mysql->getDescriptor()['host'];
-        $_last_host_id = strrev(strstr(strrev($host), '.', true));
-
+        [$_last_host_id, $sql] = $this->getHostAndSql($mysql);
         $exe_times = 0;
         global $db_query_times;
         if (!empty($db_query_times[$_last_host_id . md5($sql)])) {
@@ -214,6 +202,8 @@ class Events
                 }
             }
             $sql = str_replace('__LS.YC__', '?', $sql);
+            /** @var XLogger $logger */
+            $logger = $this->di->getShared('logger');
             $logger->other(
                 $md5 . ' | ' . $sql,
                 'INFO',
@@ -252,5 +242,16 @@ class Events
         } catch (\Throwable $e) {
             return random_int($this->sql_probability, $this->sql_divisor) === 3306;
         }
+    }
+
+    protected function getHostAndSql(Mysql $mysql)
+    {
+        $sql = $mysql->getSQLStatement();
+        $sql = str_replace(["\r\n", "\r", "\n"], [' ', ' ', ' '], $sql);
+        $sql = preg_replace('/\s\s*/', ' ', $sql);
+        $host = $mysql->getDescriptor()['host'];
+        $_last_host_id = strrev(strstr(strrev($host), '.', true));
+
+        return [$_last_host_id, $sql];
     }
 }

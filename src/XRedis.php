@@ -55,10 +55,10 @@ class XRedis
     public function __construct(array $params = [])
     {
         $options = [
-            'host' => $params['host'] ?? env('redis.host'),
-            'port' => (int)($params['port'] ?? env('redis.port')),
-            'prefix' => $params['prefix'] ?? env('redis.prefix'),
-            'index' => (int)($params['index'] ?? env('redis.index')),
+            'host' => $params['host'] ?? config('redis.host'),
+            'port' => (int)($params['port'] ?? config('redis.port')),
+            'prefix' => $params['prefix'] ?? config('redis.prefix'),
+            'index' => (int)($params['index'] ?? config('redis.index')),
             'persistent' => $params['persistent'] ?? false,
             'lifetime' => $params['lifetime'] ?? 3600,
             'defaultSerializer' => $params['defaultSerializer'] ?? 'none',
@@ -67,7 +67,7 @@ class XRedis
             throw (new SystemConfigException('Redis配置缺失'))->debug($options);
         }
         $options['prefix'] and $options['prefix'] = rtrim($options['prefix'], ':') . ':';
-        $options['auth'] = $params['password'] ?? env('redis.password');
+        $options['auth'] = $params['password'] ?? config('redis.password');
         $this->redis = new PhalconRedis(new SerializerFactory(), $options);
         $this->predis = $this->redis->getAdapter();
     }
