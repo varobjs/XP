@@ -26,7 +26,7 @@ class Events
     {
         $application->response->setHeader(
             'Access-Control-Allow-Origin',
-            is_dev() ? '*' : env('FFE_HOST')
+            is_dev() ? '*' : config('FFE_HOST', '')
         )->setHeader('Access-Control-Allow-Credentials', 'true');
 
         if ($application->request->getMethod() === 'OPTIONS') {

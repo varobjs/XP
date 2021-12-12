@@ -70,7 +70,7 @@ EOL;
     final public function initialize(): void
     {
         if (is_dev() && \PHP_SAPI === 'cli') {
-            echo 'Your can trace log by : ' . UserService::getRequestID() . PHP_EOL;
+            echo 'You can trace log by : ' . UserService::getRequestID() . PHP_EOL;
         }
         if (!extension_loaded('pcntl')) {
             throw new ErrorException(__METHOD__ . ' need ‘pcntl’ extension');

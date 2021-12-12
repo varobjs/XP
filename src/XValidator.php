@@ -210,7 +210,6 @@ class XValidator
                 }
             }
 
-
             // 更新默认值
             if ($default !== '' && (!array_key_exists(
                         $key,

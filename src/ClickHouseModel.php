@@ -39,8 +39,8 @@ abstract class ClickHouseModel
         if (null !== static::$client) {
             return;
         }
-        $host = $params['host'] ?? env('beanstalkd.host') ?? '127.0.0.1';
-        $port = $params['port'] ?? env('beanstalkd.port') ?? '8123';
+        $host = $params['host'] ?? env('clickhouse.host') ?? '127.0.0.1';
+        $port = $params['port'] ?? env('clickhouse.port') ?? '8123';
         $username = $params['username'] ?? env('clickhouse.username') ?? '';
         $password = $params['password'] ?? env('clickhouse.password') ?? '';
         $database = static::database() ?: $params['database'] ??
