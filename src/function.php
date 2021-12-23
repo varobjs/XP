@@ -68,7 +68,7 @@ if (!function_exists('load_file_env')) {
     {
         !$envFile and $envFile = BASE_PATH . DIRECTORY_SEPARATOR . '.env';
         if (!is_file($envFile)) {
-            throw new SystemConfigException('cannot found .env file');
+            die('cannot found .env file');
         }
 
         $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);

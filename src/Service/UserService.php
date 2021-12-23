@@ -4,6 +4,7 @@ namespace Varobj\XP\Service;
 
 use ErrorException;
 use Exception;
+use Throwable;
 use Varobj\XP\Application;
 
 class UserService
@@ -58,7 +59,6 @@ class UserService
 
     /**
      * @param string $request_id
-     * @throws Exception
      */
     public static function setRequestID(string $request_id = ''): void
     {
@@ -71,8 +71,12 @@ class UserService
             return;
         }
 
-        $_string = getmygid() . microtime(true) . random_bytes(10);
-        static::$request_id = strtoupper(substr(md5($_string), 4, 18)) . random_int(11, 99);
+        try {
+            $_string = getmygid() . microtime(true) . random_bytes(10);
+        } catch(Throwable $e) {
+            $_string = getmygid() . microtime(true);
+        }
+        static::$request_id = strtoupper(substr(md5($_string), 4, 18));
     }
 
     /**
